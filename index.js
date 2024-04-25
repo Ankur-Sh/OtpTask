@@ -44,15 +44,31 @@ app.post("/generate-otp", async (req, res) => {
     try {
         // Check if user exists
         let user = await User.findOne({ email });
+        const now = new Date();
 
         if (!user) {
             // Create new user if not exists
             user = new User({ email });
             await user.save();
+        } else {
+            // Check if the user is blocked
+            if (user.blockedUntil && new Date(user.blockedUntil) > now) {
+                const blockedUntil = new Date(user.blockedUntil);
+                const timeUntilUnblock = blockedUntil - now;
+                const minutesUntilUnblock = Math.floor(
+                    (timeUntilUnblock % (60 * 60 * 1000)) / (60 * 1000)
+                ); // Calculating minutes until unblock
+                const secondsUntilUnblock = Math.floor(
+                    (timeUntilUnblock % (60 * 1000)) / 1000
+                ); // Calculating seconds until unblock
+                return res.status(403).json({
+                    error: `User is blocked for ${minutesUntilUnblock} minutes ${secondsUntilUnblock} seconds`,
+                });
+            }
         }
 
         // Check if enough time has passed since last OTP generation
-        const now = new Date();
+
         const lastGenerated = new Date(user.otpTimestamp) || new Date(0); // Parse string to Date
         const timeDiff = now - lastGenerated;
         const minTimeDiff = 60 * 1000; // 1 minute
@@ -97,9 +113,17 @@ app.post("/login", async (req, res) => {
         // Check if user is blocked
         const now = new Date();
         if (user.blockedUntil && new Date(user.blockedUntil) > now) {
-            return res
-                .status(403)
-                .json({ error: "User is blocked. Please try again later." });
+            const blockedUntil = new Date(user.blockedUntil);
+            const timeUntilUnblock = blockedUntil - now;
+            const minutesUntilUnblock = Math.floor(
+                (timeUntilUnblock % (60 * 60 * 1000)) / (60 * 1000)
+            ); // Calculating minutes until unblock
+            const secondsUntilUnblock = Math.floor(
+                (timeUntilUnblock % (60 * 1000)) / 1000
+            ); // Calculating seconds until unblock
+            return res.status(403).json({
+                error: `User is blocked for ${minutesUntilUnblock} minutes ${secondsUntilUnblock} seconds`,
+            });
         }
 
         // Check if OTP is valid and not already used
