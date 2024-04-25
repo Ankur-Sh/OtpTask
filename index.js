@@ -33,6 +33,9 @@ const User = mongoose.model("User", userSchema);
 
 // Body parser middleware
 app.use(bodyParser.json());
+app.get("/", (req, res) => {
+    res.send("HEllo");
+});
 
 // Generate OTP API
 app.post("/generate-otp", async (req, res) => {
