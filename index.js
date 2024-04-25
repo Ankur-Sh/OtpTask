@@ -9,7 +9,7 @@ const Mailgen = require("mailgen");
 
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || "https://otp-task-a66b.vercel.app";
+const PORT = process.env.PORT || 3000;
 
 // Connecting to MongoDB
 mongoose.connect(process.env.MONGO_URL, {
