@@ -149,8 +149,8 @@ async function sendOTPByEmail(email, otp) {
     const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
-            user: "asblaster100@gmail.com",
-            pass: "stgzypnfnloohooa",
+            user: process.env.EMAIL,
+            pass: process.env.PASSWORD,
         },
     });
 
