@@ -149,54 +149,59 @@ app.use((err, req, res, next) => {
 // Function to send OTP by email
 async function sendOTPByEmail(email, otp) {
     // Create a nodemailer transporter using SMTP or other transport options
-    const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-            user: process.env.EMAIL,
-            pass: process.env.PASSWORD,
-        },
-    });
-
-    // Initialize Mailgen
-    const mailGenerator = new Mailgen({
-        theme: "default",
-        product: {
-            name: "Mailgen",
-            link: "https://mailgen.js/",
-        },
-    });
-
-    // Generate email content
-    const emailTemplate = {
-        body: {
-            name: email.split("@")[0],
-            intro: "Your OTP",
-            table: {
-                data: [
-                    {
-                        item: "OTP",
-                        description: otp,
-                    },
-                ],
+    try {
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.EMAIL,
+                pass: process.env.PASSWORD,
             },
-            outro: "OTP",
-        },
-    };
+        });
 
-    // Generate the email
-    const emailBody = mailGenerator.generate(emailTemplate);
-    const emailText = mailGenerator.generatePlaintext(emailTemplate);
+        // Initialize Mailgen
+        const mailGenerator = new Mailgen({
+            theme: "default",
+            product: {
+                name: "Mailgen",
+                link: "https://mailgen.js/",
+            },
+        });
 
-    // Send email with OTP
-    await transporter.sendMail({
-        from: '"Ankur Sharma" <asblaster100@gmail.com>',
-        to: email,
-        subject: "Your OTP for login",
-        text: emailText,
-        html: emailBody,
-    });
+        // Generate email content
+        const emailTemplate = {
+            body: {
+                name: email.split("@")[0],
+                intro: "Your OTP",
+                table: {
+                    data: [
+                        {
+                            item: "OTP",
+                            description: otp,
+                        },
+                    ],
+                },
+                outro: "OTP",
+            },
+        };
 
-    console.log("OTP email sent successfully");
+        // Generate the email
+        const emailBody = mailGenerator.generate(emailTemplate);
+        const emailText = mailGenerator.generatePlaintext(emailTemplate);
+
+        // Send email with OTP
+        await transporter.sendMail({
+            from: '"Ankur Sharma" <asblaster100@gmail.com>',
+            to: email,
+            subject: "Your OTP for login",
+            text: emailText,
+            html: emailBody,
+        });
+
+        console.log("OTP email sent successfully");
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
 }
 
 app.listen(PORT, () => {
